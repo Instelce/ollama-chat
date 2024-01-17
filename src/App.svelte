@@ -1,15 +1,21 @@
 <script lang="ts">
+    import { onMount } from "svelte";
+    import ollamaAPI from "./lib/api";
     import chat from "./lib/chat";
     import Message from "./lib/components/Message.svelte";
     import Sidebar from "./lib/components/Sidebar.svelte";
     import TextAreaAutosize from "./lib/components/TextAreaAutosize.svelte";
     import { messagesStore, currentResponseStore } from "./lib/messages";
-    import type { MessageType } from "./lib/types";
+    import type { MessageType, Model } from "./lib/types";
     import { ArrowUpIcon } from "svelte-feather-icons";
+    import Select from "./lib/components/Select.svelte";
 
     let messageValue: string;
 
+    // Models
     let currentModel = "mistral";
+    let allModels: Model[] = [];
+
     let messages: MessageType[] = [];
     let currentResponse: { loading: boolean; stream: string };
 
@@ -40,19 +46,46 @@
 
         console.log(messages);
     };
+
+    onMount(async () => {
+        allModels = await ollamaAPI.models.list().then((d) => d["models"]);
+        console.log(allModels);
+    });
 </script>
 
 <!-- Sidebar -->
 <Sidebar />
+
+<!-- Topbar -->
+{#if messages.length > 0}
+    <nav>
+        {#if allModels}
+            <Select
+                data={allModels.map((m) => m.name.split(":")[0])}
+                bind:value={currentModel}
+            />
+        {:else}
+            <p>Load models...</p>
+        {/if}
+    </nav>
+{/if}
 
 <main>
     <!-- Chat -->
     {#if messages.length === 0}
         <header>
             <div class="logo">
-                <img src="public/ollama.png" alt="">
+                <img src="public/ollama.png" alt="" />
             </div>
             <h2>Ollama Chat</h2>
+            {#if allModels}
+                <Select
+                    data={allModels.map((m) => m.name.split(":")[0])}
+                    bind:value={currentModel}
+                />
+            {:else}
+                <p>Load models...</p>
+            {/if}
         </header>
     {/if}
 
@@ -91,7 +124,6 @@
 <!-- ShowdownJS & MathJax -->
 
 <style lang="scss">
-
     header {
         height: 60vh;
 
@@ -105,7 +137,7 @@
             content: "";
             width: 10rem;
             height: 10rem;
-            background: rgba(var(--color-primary-700), .6);
+            background: rgba(var(--color-primary-700), 0.6);
             position: absolute;
             border-radius: 100px;
             filter: blur(1000px);
@@ -120,8 +152,8 @@
             background: #fff;
             width: 4rem;
             height: 4rem;
-            padding: .6rem;
-            padding-top: .2rem;
+            padding: 0.6rem;
+            padding-top: 0.2rem;
             padding-bottom: 0;
             border-radius: var(--border-radius-1);
 
@@ -152,7 +184,11 @@
             position: fixed;
             bottom: 0;
             left: 0;
-            background: linear-gradient(0deg, rgb(var(--color-surface-900)), transparent);
+            background: linear-gradient(
+                0deg,
+                rgb(var(--color-surface-900)),
+                transparent
+            );
         }
     }
 
@@ -168,7 +204,7 @@
             width: 2rem;
             height: 2rem;
             position: fixed;
-            right: .8rem;
+            right: 0.8rem;
             top: 50%;
             transform: translateY(-50%);
             border-radius: var(--border-radius-2);

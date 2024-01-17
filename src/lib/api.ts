@@ -8,7 +8,10 @@ const ollamaAxios = axios.create({
 const ollamaAPI = {
     chat: (data: {model: string, messages: MessageType[]}) => ollamaAxios.post("/api/chat", JSON.stringify(data)).then(r => r.data),
     models: {
-        list: () => ollamaAxios.get("/api/tags").then(r => r.data),
+        list: async () => await ollamaAxios.get("/api/tags").then(r => {
+            console.log("data: ", r.data);
+            return r.data
+        }),
     }
 }
 
