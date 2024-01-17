@@ -1,76 +1,69 @@
+@import url("https://cdn.jsdelivr.net/gh/jgthms/minireset.css@master/minireset.min.css");
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap');
+
 :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+    --color-surface-50: 246, 246, 249;
+    --color-surface-100: 237, 237, 241;
+    --color-surface-200: 215, 216, 224;
+    --color-surface-300: 180, 183, 197;
+    --color-surface-400: 139, 143, 165;
+    --color-surface-500: 108, 112, 139;
+    --color-surface-600: 87, 90, 114;
+    --color-surface-700: 71, 73, 93;
+    --color-surface-800: 61, 63, 79;
+    --color-surface-900: 52, 53, 65;
+    --color-surface-950: 36, 36, 45;
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+    --color-primary-50: 238, 240, 255;
+    --color-primary-100: 223, 227, 255;
+    --color-primary-200: 198, 202, 255;
+    --color-primary-300: 163, 167, 254;
+    --color-primary-400: 131, 126, 251;
+    --color-primary-500: 112, 95, 245;
+    --color-primary-600: 89, 56, 232;
+    --color-primary-700: 84, 52, 206;
+    --color-primary-800: 68, 45, 166;
+    --color-primary-900: 58, 44, 131;
+    --color-primary-950: 36, 26, 76;
 
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+    --text-size-xs: 0.64rem;
+    --text-size-sm: 0.8rem;
+    --text-size-md: 1rem;
+    --text-size-lg: 1.25rem;
+    --text-size-xl: 1.56rem;
+    --text-size-2xl: 1.95rem;
+    --text-size-3xl: 2.44rem;
+    --text-size-4xl: 3.05rem;
+    --text-size-5xl: 3.81rem;
+
+    --border-radius-1: 10px;
+    --border-radius-2: 6px;
+
+    font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+    font-size: 16px;
+    font-weight: 400;
+
+    color-scheme: light dark;
+    color: rgb(var(--color-surface-50));
+    background-color: rgb(var(--color-surface-900));
+
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
-}
-
-body {
-  margin: 0;
-  min-width: 320px;
-  min-height: 100vh;
-}
-
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-}
-
-.card {
-  padding: 2em;
-}
-
-#app {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
+textarea {
+  outline: none;
+  font-size: 16px;
+  font-family: inherit;
 }
 
 button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
+  padding: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
   cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
 }

@@ -1,17 +1,15 @@
 import ollamaAPI from "./api"
-import type { Message } from "./types";
+import type { MessageType } from "./types";
 import { currentResponseStore } from "./messages";
 
-async function chat(data: { model: string, messages: Message[] }): Promise<Message> {
-    let currentResponse: string = '';
-
+async function chat(data: { model: string, messages: MessageType[] }): Promise<MessageType> {
     // const response = await ollamaAPI.chat(data);
     const response = await fetch("http://localhost:11434/api/chat", {
         method: "POST",
         body: JSON.stringify(data)
     })
 
-    console.log(response);
+    // console.log(response);
 
     currentResponseStore.update(value => {
         return {
@@ -41,7 +39,7 @@ async function chat(data: { model: string, messages: Message[] }): Promise<Messa
         const json = JSON.parse(rawjson)
 
         if (json.done === false) {
-            console.log(json.message.content);
+            // console.log(json.message.content);
             currentResponseStore.update(value => {
                 return {
                     loading: true,
@@ -50,6 +48,8 @@ async function chat(data: { model: string, messages: Message[] }): Promise<Messa
             })
         }
     }
+
+    let currentResponse: string = '';
     const unsubscribe = currentResponseStore.subscribe(store => currentResponse = store.stream);
     unsubscribe();
 
