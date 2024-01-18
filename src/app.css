@@ -54,6 +54,10 @@
     -moz-osx-font-smoothing: grayscale;
 }
 
+#app {
+  height: 100vh;
+}
+
 textarea {
   outline: none;
   font-size: 16px;
@@ -66,4 +70,5 @@ button {
   outline: none;
   background: transparent;
   cursor: pointer;
+  font-size: inherit;
 }

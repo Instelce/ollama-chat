@@ -1,14 +1,15 @@
 <script lang="ts">
-    import type {MessageType} from "../types";
-    import {marked} from "marked";
-    import {capitalize} from "../utils/helpers";
+    import type { MessageType } from "../types";
+    import { marked } from "marked";
+    import { capitalize } from "../utils/helpers";
 
     export let message: MessageType;
+    export let isLoading: boolean = false;
 </script>
 
 <div class="message-container">
     <div class="avatar">
-        {#if message.role === 'user'}
+        {#if message.role === "user"}
             <span>Y</span>
         {:else}
             <span>A</span>
@@ -18,17 +19,18 @@
     <div class="content">
         <span>{capitalize(message.role)}</span>
         {@html marked(message.content)}
-        <!-- <p>{message.content}</p> -->
+        {#if isLoading}
+            <span class="cursor"></span>
+        {/if}
     </div>
 </div>
 
 <style lang="scss">
-
     .message-container {
         display: grid;
         grid-template-columns: 2rem 1fr;
         align-items: flex-start;
-        gap: .4rem;
+        gap: 0.4rem;
     }
 
     .avatar {
@@ -45,20 +47,37 @@
     }
 
     .content {
-        padding-top: .2rem;
+        padding-top: 0.2rem;
 
         display: flex;
         flex-direction: column;
-        gap: .4rem;
+        gap: 0.4rem;
 
-        span {
-            height: 1.6rem;
-            font-weight: 700;
-        }
-
-        p {
-            text-wrap: wrap;
-        }
+        /* Style of markdown */
     }
 
+    p {
+        width: fit-content;
+        text-wrap: wrap;
+        display: inline-block;
+    }
+
+    .cursor {
+        width: 0.8rem;
+        height: 0.8rem;
+        background: rgb(var(--color-surface-50));
+        border-radius: 100px;
+        animation: bounce 0.3s infinite;
+        display: inline;
+        background: rgb(var(--color-surface-50));
+    }
+
+    @keyframes bounce {
+        0% {
+            transform: scale(1);
+        }
+        100% {
+            transform: scale(0.8);
+        }
+    }
 </style>

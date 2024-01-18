@@ -1,131 +1,239 @@
 <script lang="ts">
     import { onMount } from "svelte";
     import ollamaAPI from "./lib/api";
-    import chat from "./lib/chat";
-    import Message from "./lib/components/Message.svelte";
+    import chatWithModel, { generateChatName } from "./lib/chat";
+    import type { ChatType, MessageType, ModelType } from "./lib/types";
+    import {
+        currentChatStore,
+        currentResponseStore,
+        emptyChat,
+    } from "./lib/messages";
+    import { capitalize } from "./lib/utils/helpers";
+    import { ArrowUpIcon, SettingsIcon, EditIcon } from "svelte-feather-icons";
     import Sidebar from "./lib/components/Sidebar.svelte";
+    import Message from "./lib/components/Message.svelte";
     import TextAreaAutosize from "./lib/components/TextAreaAutosize.svelte";
-    import { messagesStore, currentResponseStore } from "./lib/messages";
-    import type { MessageType, Model } from "./lib/types";
-    import { ArrowUpIcon } from "svelte-feather-icons";
     import Select from "./lib/components/Select.svelte";
+    import Button from "./lib/components/Button.svelte";
+    import { historyStore } from "./lib/history";
 
-    let messageValue: string;
+    let sidebarIsCollapsed: boolean;
 
     // Models
     let currentModel = "mistral";
-    let allModels: Model[] = [];
+    let allModels: ModelType[] = [];
 
-    let messages: MessageType[] = [];
+    // Messages
+    let messageValue: string;
     let currentResponse: { loading: boolean; stream: string };
 
-    // get messages from store
-    messagesStore.subscribe((value) => (messages = value));
+    // Chat
+    let history: ChatType[];
+    let currentChat: ChatType;
+    let chatNamePromise = Promise.resolve([]);
+    // let chatIndex = history.indexOf()
+
+    // get data from stores
+    currentChatStore.subscribe((value) => (currentChat = value));
     currentResponseStore.subscribe((value) => (currentResponse = value));
+    historyStore.subscribe((value) => (history = value));
 
     const newInteraction = async (messageValue: string) => {
         console.log(messageValue);
 
         // add user message
-        messagesStore.update((messages) => [
-            ...messages,
-            {
-                role: "user",
-                content: messageValue,
-            },
-        ]);
-
-        // send messages to Ollama API
-        await chat({
-            model: currentModel,
-            messages: messages,
-        }).then((response) => {
-            // store the LLM response
-            messagesStore.update((messages) => [...messages, response]);
+        currentChatStore.update((chat) => {
+            return {
+                ...chat,
+                messages: [
+                    ...chat.messages,
+                    {
+                        role: "user",
+                        content: messageValue,
+                    },
+                ],
+            };
         });
 
-        console.log(messages);
+        // send messages to Ollama API
+        await chatWithModel({
+            model: currentModel,
+            messages: currentChat.messages,
+        }).then((response) => {
+            // store the LLM response
+            currentChatStore.update((chat) => {
+                return {
+                    ...chat,
+                    messages: [...chat.messages, response],
+                };
+            });
+        });
+
+        // add new chat if it's the first interaction
+        if (currentChat.messages.length == 2) {
+            chatNamePromise = generateChatName({
+                model: currentModel,
+                prompt: currentChat.messages[currentChat.messages.length - 1].content,
+            }).then((data) => {
+                console.log("New chaaat");
+                currentChatStore.set({
+                    id: history.length + 1,
+                    name: data.response,
+                    messages: currentChat.messages,
+                });
+                historyStore.update((value) => [...value, currentChat]);
+            });
+        }
     };
+
+    function newChat() {
+        // add chat to history
+        if (currentChat != emptyChat) {
+            historyStore.update((history) => {
+                return history.map((chat) => {
+                    if (chat.id === currentChat.id) {
+                        return currentChat;
+                    } else {
+                        return chat;
+                    }
+                });
+            });
+        }
+
+        currentChatStore.set(emptyChat);
+    }
 
     onMount(async () => {
         allModels = await ollamaAPI.models.list().then((d) => d["models"]);
-        console.log(allModels);
     });
+
+    $: console.log("chat", currentChat);
 </script>
 
 <!-- Sidebar -->
-<Sidebar />
+<div class="container">
+    <Sidebar bind:isCollapsed={sidebarIsCollapsed} newChat={() => newChat()} />
 
-<!-- Topbar -->
-{#if messages.length > 0}
-    <nav>
-        {#if allModels}
-            <Select
-                data={allModels.map((m) => m.name.split(":")[0])}
-                bind:value={currentModel}
-            />
-        {:else}
-            <p>Load models...</p>
-        {/if}
-    </nav>
-{/if}
-
-<main>
-    <!-- Chat -->
-    {#if messages.length === 0}
-        <header>
-            <div class="logo">
-                <img src="public/ollama.png" alt="" />
-            </div>
-            <h2>Ollama Chat</h2>
-            {#if allModels}
-                <Select
-                    data={allModels.map((m) => m.name.split(":")[0])}
-                    bind:value={currentModel}
-                />
+    <main>
+        <!-- Topbar -->
+        <nav>
+            <!-- New chat button -->
+            {#if sidebarIsCollapsed}
+                <Button square onClick={newChat}><EditIcon size="18" /></Button>
             {:else}
-                <p>Load models...</p>
+                <span></span>
             {/if}
-        </header>
-    {/if}
+            {#if currentChat.messages.length > 0}
+                <p class="model">{capitalize(currentModel)}</p>
+            {:else}
+                <span></span>
+            {/if}
 
-    <form
-        on:submit={(e) => {
-            e.preventDefault();
-            newInteraction(messageValue);
-            messageValue = "";
-        }}
-    >
-        <TextAreaAutosize
-            bind:value={messageValue}
-            minRows={1}
-            maxRows={10}
-            onSubmit={newInteraction}
-            placeholder={`Message to ${currentModel} ...`}
-        />
-        <button type="submit"><ArrowUpIcon /></button>
-    </form>
+            <!-- Settings button -->
+            <Button square><SettingsIcon size="18" /></Button>
+        </nav>
 
-    <div class="messages-container">
-        {#each messages as message}
-            <Message {message} />
-        {/each}
-        {#if currentResponse.loading}
-            <Message
-                message={{
-                    role: "assistant",
-                    content: currentResponse.stream,
-                }}
-            />
+        {#if currentChat.messages.length === 0}
+            <!-- Header -->
+            <header>
+                <div class="logo">
+                    <img src="public/ollama.png" alt="" />
+                </div>
+                <h2>Ollama Chat</h2>
+                {#if allModels}
+                    <Select
+                        data={allModels.map((m) => m.name.split(":")[0])}
+                        bind:value={currentModel}
+                    />
+                {:else}
+                    <p>Load models...</p>
+                {/if}
+            </header>
+        {:else}
+            <!-- Chat messages -->
+            <div class="messages-container">
+                {#each currentChat.messages as message}
+                    <Message {message} />
+                {/each}
+                {#if currentResponse.loading}
+                    <Message
+                        isLoading
+                        message={{
+                            role: "assistant",
+                            content: currentResponse.stream,
+                        }}
+                    />
+                {/if}
+            </div>
         {/if}
-    </div>
-</main>
+
+        <!-- Prompt input -->
+        <form
+            on:submit={(e) => {
+                e.preventDefault();
+                if (messageValue !== "") {
+                    newInteraction(messageValue);
+                    messageValue = "";
+                }
+            }}
+        >
+            <div>
+                <TextAreaAutosize
+                    bind:value={messageValue}
+                    minRows={1}
+                    maxRows={10}
+                    onSubmit={newInteraction}
+                    placeholder={`Message to ${currentModel} ...`}
+                />
+                <Button type="submit" square><ArrowUpIcon /></Button>
+            </div>
+        </form>
+    </main>
+</div>
 
 <!-- ShowdownJS & MathJax -->
 
 <style lang="scss">
+    .container {
+        height: 100%;
+        width: 100vw;
+        display: flex;
+        position: relative;
+        overflow: hidden;
+    }
+
+    nav {
+        width: 100%;
+        padding: 1rem 2rem;
+        position: absolute;
+        left: 0;
+        top: 0;
+        z-index: 2;
+
+        background: rgb(var(--color-surface-900));
+
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        .model {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+    }
+
+    main {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        overflow: scroll;
+    }
+
     header {
-        height: 60vh;
+        height: 100vh;
 
         display: flex;
         align-items: center;
@@ -167,15 +275,16 @@
         }
     }
 
-    main {
-        margin: 2rem 20%;
-    }
-
     .messages-container {
+        width: 800px;
+        height: 100vh;
+        padding: 6rem 0rem;
+        margin: auto;
+
         display: flex;
         flex-direction: column;
         gap: 1rem;
-        padding-bottom: 4rem;
+        overflow-y: scroll;
 
         &::after {
             content: "";
@@ -184,6 +293,7 @@
             position: fixed;
             bottom: 0;
             left: 0;
+
             background: linear-gradient(
                 0deg,
                 rgb(var(--color-surface-900)),
@@ -193,36 +303,36 @@
     }
 
     form {
-        display: flex;
-        position: fixed;
-        bottom: 1rem;
-        left: 50%;
-        transform: translateX(-50%);
         z-index: 10;
+        padding: 1rem 0;
 
-        button {
-            width: 2rem;
-            height: 2rem;
-            position: fixed;
-            right: 0.8rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        & > div {
+            width: 800px;
+            position: relative;
+        }
+
+        & :global(button) {
+            position: absolute;
+            right: 0.4rem;
             top: 50%;
             transform: translateY(-50%);
+
             border-radius: var(--border-radius-2);
-
-            display: grid;
-            place-items: center;
-
             background: rgb(var(--color-surface-800));
             box-shadow: 0 0 0 1px rgb(var(--color-surface-800));
 
-            &:hover {
-                box-shadow: 0 0 0 1px rgb(var(--color-surface-600));
+            &:active {
+                transform: translateY(-50%) scale(0.95);
             }
+        }
 
-            svg {
-                background: #000;
-                stroke: rgb(var(--color-surface-800));
-            }
+        svg {
+            background: #000;
+            stroke: rgb(var(--color-surface-800));
         }
     }
 </style>

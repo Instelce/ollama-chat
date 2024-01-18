@@ -1,7 +1,13 @@
 import {writable } from "svelte/store";
-import type { MessageType } from "./types"
+import type { ChatType } from "./types"
 
-export let messagesStore = writable<MessageType[]>([])
+export let emptyChat: ChatType = {
+    id: 0,
+    name: "",
+    messages: [],
+}
+
+export let currentChatStore = writable<ChatType>(emptyChat)
 export let currentResponseStore = writable<{
     loading: boolean,
     stream: string

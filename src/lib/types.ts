@@ -3,7 +3,7 @@ export type MessageType = {
     content: string;
 }
 
-export type Model = {
+export type ModelType = {
     name: string;
     modified_at: Date;
     size: number;
@@ -15,4 +15,12 @@ export type Model = {
         parameter_size: string;
         quantization_level: string;
     }
+}
+
+// Conversation
+export type ChatType = {
+    id: number;
+    name: string;
+    messages: MessageType[];
+    // date: Date;
 }

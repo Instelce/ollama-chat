@@ -2,7 +2,7 @@ import ollamaAPI from "./api"
 import type { MessageType } from "./types";
 import { currentResponseStore } from "./messages";
 
-async function chat(data: { model: string, messages: MessageType[] }): Promise<MessageType> {
+async function chatWithModel(data: { model: string, messages: MessageType[] }): Promise<MessageType> {
     // const response = await ollamaAPI.chat(data);
     const response = await fetch("http://localhost:11434/api/chat", {
         method: "POST",
@@ -56,4 +56,17 @@ async function chat(data: { model: string, messages: MessageType[] }): Promise<M
     return { role: "assistant", content: currentResponse };
 }
 
-export default chat;
+export async function generateChatName(data: {model: string, prompt: string}) {
+    const response = await self.fetch("http://localhost:11434/api/generate", {
+        method: "POST",
+        body: JSON.stringify({
+            model: data.model,
+            prompt: `Give the topic in 2 WORD of the text below. Does not say "The subject of this text is..." nor "The topic of this text is...". Give only the topic. \n """${data.prompt}"""`,
+            stream: false
+        }),
+    })
+
+    return response.json()
+}
+
+export default chatWithModel;
