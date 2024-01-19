@@ -2,7 +2,9 @@ import axios from "axios";
 import type { MessageType } from "./types";
 
 const ollamaAxios = axios.create({
-    baseURL: 'http://localhost:11434'
+    baseURL: 'http://localhost:11434',
+    headers: {
+    }
 })
 
 const ollamaAPI = {

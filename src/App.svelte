@@ -79,11 +79,15 @@
                 currentChatStore.set({
                     id: history.length + 1,
                     name: data.response,
+                    model: currentModel,
                     messages: currentChat.messages,
                 });
                 historyStore.update((value) => [...value, currentChat]);
             });
         }
+
+        // make a save to local storage
+        localStorage.setItem("history", JSON.stringify(history));
     };
 
     function newChat() {
@@ -100,11 +104,19 @@
             });
         }
 
+        localStorage.setItem("history", JSON.stringify(history));
+
         currentChatStore.set(emptyChat);
     }
 
     onMount(async () => {
+        // fetch all models
         allModels = await ollamaAPI.models.list().then((d) => d["models"]);
+
+        // get data from local storage
+        if (localStorage.getItem("history")) {
+            historyStore.set(JSON.parse(localStorage.getItem("history") as string))
+        }
     });
 
     $: console.log("chat", currentChat);
@@ -141,10 +153,19 @@
                 </div>
                 <h2>Ollama Chat</h2>
                 {#if allModels}
-                    <Select
-                        data={allModels.map((m) => m.name.split(":")[0])}
-                        bind:value={currentModel}
-                    />
+                    {#if allModels.length === 0}
+                        <p>Follow instruction on this <a href="https://github.com/jmorganca/ollama/blob/main/docs/faq.md#how-do-i-use-ollama-server-environment-variables-on-linux">page</a>. Or install a <a href="https://ollama.ai/library">model</a></p>
+                    {:else}
+                        <Select
+                            data={allModels.map((m) => {
+                                return {
+                                    value: m.name.split(":")[0],
+                                    text: `${capitalize(m.name.split(":")[0])} (${m.details.parameter_size})`
+                                }
+                            })}
+                            bind:value={currentModel}
+                        />
+                    {/if}
                 {:else}
                     <p>Load models...</p>
                 {/if}

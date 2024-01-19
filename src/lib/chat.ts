@@ -61,7 +61,7 @@ export async function generateChatName(data: {model: string, prompt: string}) {
         method: "POST",
         body: JSON.stringify({
             model: data.model,
-            prompt: `Give the topic in 2 WORD of the text below. Does not say "The subject of this text is..." nor "The topic of this text is...". Give only the topic. \n """${data.prompt}"""`,
+            prompt: `Give the topic in 2 WORD of the text below. Does not say "The subject of this text is...", nor "The text mentions...", nor "The topic of this text is...". Give only the topic. \n """${data.prompt}"""`,
             stream: false
         }),
     })

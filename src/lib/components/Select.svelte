@@ -1,11 +1,11 @@
 <script lang="ts">
-    export let data: string[];
+    export let data: {value: string, text: string}[];
     export let value: string;
 </script>
 
 <select bind:value name="" id="">
     {#each data as val}
-        <option value={val}>{val}</option>
+        <option value={val.value}>{val.text}</option>
     {/each}
 </select>
 
@@ -23,6 +23,7 @@
         background: rgb(var(--color-surface-700));
 
         line-height: 1rem;
+        font-size: inherit;
         cursor: pointer;
 
         transition: transform .2s ease;

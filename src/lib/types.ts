@@ -21,6 +21,7 @@ export type ModelType = {
 export type ChatType = {
     id: number;
     name: string;
+    model: string;
     messages: MessageType[];
     // date: Date;
 }

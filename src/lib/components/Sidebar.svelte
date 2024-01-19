@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { EditIcon, ChevronLeftIcon } from "svelte-feather-icons";
+    import { EditIcon, ChevronLeftIcon, TrashIcon } from "svelte-feather-icons";
     import Button from "./Button.svelte";
     import { historyStore } from "../history";
     import type { ChatType } from "../types";
@@ -15,13 +15,18 @@
 
     $: console.log("history", history);
 
+    function removeChat(chat: ChatType) {
+        historyStore.update(history => history.filter(c => c.id !== chat.id))
+        localStorage.setItem("history", JSON.stringify(history));
+    }
+
     let hoverToggleButton: boolean;
 </script>
 
 <div class="container" style="width: {isCollapsed ? '0' : '15vw'}">
     <div class="wrapper" style="opacity: {hoverToggleButton ? '.6' : '1'};">
         <header>
-            <Button grow onClick={newChat}
+            <Button grow onClick={newChat} py={0.8}
                 >New chat <EditIcon size="18" /></Button
             >
         </header>
@@ -32,8 +37,16 @@
                     currentChatStore.set(chat);
                 }}
                 class={chat.id === currentChat.id ? "active" : ""}
-                >{chat.name}</Button
+                py={0.6}
             >
+                {chat.name}
+
+                <div slot="on-hover">
+                    <Button square xy={.2} bg onClick={() => removeChat(chat)}>
+                        <TrashIcon size="18" />
+                    </Button>
+                </div>
+            </Button>
         {/each}
     </div>
 
@@ -72,22 +85,21 @@
 
         transition: opacity 0.2s;
 
-        :global(button) {
+        :global(> button) {
             white-space: nowrap;
             overflow: hidden;
             position: relative;
 
             &::after {
                 content: "";
-                width: 10%;
+                width: 20%;
                 height: 100%;
                 position: absolute;
                 right: 0;
                 top: 0;
-                background: linear-gradient(90deg, transparent, rgb(0, 0, 0));
+                background: linear-gradient(90deg, transparent 0%, rgb(0, 0, 0) 100%);
             }
         }
-
     }
 
     :global(.active) {

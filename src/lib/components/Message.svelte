@@ -1,10 +1,22 @@
 <script lang="ts">
     import type { MessageType } from "../types";
     import { marked } from "marked";
+    import markdownit from "markdown-it"
+    import highlightjs from 'markdown-it-highlightjs';
     import { capitalize } from "../utils/helpers";
 
     export let message: MessageType;
     export let isLoading: boolean = false;
+
+    const md = markdownit({
+        html: true,
+        breaks: true,
+        linkify: true,
+        typographer: true,
+        highlight: true
+    }).use(highlightjs)
+
+    $: htmlContent = md.render(message.content).replace(/#/g, '')
 </script>
 
 <div class="message-container">
@@ -18,7 +30,7 @@
 
     <div class="content">
         <span>{capitalize(message.role)}</span>
-        {@html marked(message.content)}
+        {@html htmlContent}
         {#if isLoading}
             <span class="cursor"></span>
         {/if}

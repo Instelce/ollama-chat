@@ -4,6 +4,7 @@ import type { ChatType } from "./types"
 export let emptyChat: ChatType = {
     id: 0,
     name: "",
+    model: "",
     messages: [],
 }
 
