@@ -1,9 +1,9 @@
 <script lang="ts">
     import { EditIcon, ChevronLeftIcon, TrashIcon } from "svelte-feather-icons";
     import Button from "./Button.svelte";
-    import { historyStore } from "../history";
+    import { historyStore } from "../stores/history";
     import type { ChatType } from "../types";
-    import { currentChatStore, emptyChat } from "../messages";
+    import { currentChatStore, emptyChat } from "../stores/messages";
 
     export let newChat: () => void;
     export let isCollapsed: boolean = false;

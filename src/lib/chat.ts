@@ -1,6 +1,6 @@
 import ollamaAPI from "./api"
 import type { MessageType } from "./types";
-import { currentResponseStore } from "./messages";
+import { currentResponseStore } from "./stores/messages";
 
 async function chatWithModel(data: { model: string, messages: MessageType[] }): Promise<MessageType> {
     // const response = await ollamaAPI.chat(data);

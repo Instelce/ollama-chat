@@ -1,14 +1,14 @@
 <script lang="ts">
     import type { MessageType } from "../types";
     import { marked } from "marked";
-    import markdownit from "markdown-it"
+    import MarkdownIt from "markdown-it"
     import highlightjs from 'markdown-it-highlightjs';
     import { capitalize } from "../utils/helpers";
 
     export let message: MessageType;
     export let isLoading: boolean = false;
 
-    const md = markdownit({
+    const md = new MarkdownIt({
         html: true,
         breaks: true,
         linkify: true,
@@ -16,21 +16,26 @@
         highlight: true
     }).use(highlightjs)
 
-    $: htmlContent = md.render(message.content).replace(/#/g, '')
+    $: htmlContent = md.render(message.content)
 </script>
 
 <div class="message-container">
-    <div class="avatar">
-        {#if message.role === "user"}
-            <span>Y</span>
-        {:else}
-            <span>A</span>
-        {/if}
+    <div class="role">
+        <div class="avatar">
+            {#if message.role === "user"}
+                <span>Y</span>
+            {:else}
+                <span>A</span>
+            {/if}
+        </div>
+        
+        <span>{capitalize(message.role)}</span>
     </div>
 
     <div class="content">
-        <span>{capitalize(message.role)}</span>
-        {@html htmlContent}
+        <div class="md">
+            {@html htmlContent}
+        </div>
         {#if isLoading}
             <span class="cursor"></span>
         {/if}
@@ -39,10 +44,20 @@
 
 <style lang="scss">
     .message-container {
-        display: grid;
-        grid-template-columns: 2rem 1fr;
+        display: flex;
+        flex-direction: column;
         align-items: flex-start;
         gap: 0.4rem;
+    }
+
+    .role {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+
+        span {
+            font-weight: 600;
+        }
     }
 
     .avatar {
@@ -59,6 +74,7 @@
     }
 
     .content {
+        margin-left: 2.6rem;
         padding-top: 0.2rem;
 
         display: flex;

@@ -1,6 +1,5 @@
 @import url("https://cdn.jsdelivr.net/gh/jgthms/minireset.css@master/minireset.min.css");
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap');
-@import url('https://raw.githubusercontent.com/highlightjs/highlight.js/main/src/styles/dark.css');
 
 :root {
     --color-surface-50: 246, 246, 249;
@@ -76,6 +75,38 @@ button {
 
 
 /* md */
+
+.md {
+
+  pre {
+    padding: .5rem 1rem;
+    margin: .5rem 0;
+    background: rgb(var(--color-surface-950));
+    border-radius: var(--border-radius-1);
+  }
+
+  h1 {
+    font-size: var(--text-size-3xl);
+    font-weight: 700;
+  }
+
+  h2 {
+    font-size: var(--text-size-2xl);
+  }
+
+  h3 {
+    font-size: var(--text-size-xl);
+  }
+
+  p code {
+    padding: .2rem .3rem 0 .3rem;
+    background: rgb(var(--color-surface-950));
+    border-radius: var(--border-radius-2);
+    display: inline-flex;
+    align-items: center;
+  }
+
+}
 
 /*!
   Theme: StackOverflow Dark

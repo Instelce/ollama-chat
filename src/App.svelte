@@ -1,13 +1,12 @@
 <script lang="ts">
     import { onMount } from "svelte";
-    import ollamaAPI from "./lib/api";
     import chatWithModel, { generateChatName } from "./lib/chat";
     import type { ChatType, MessageType, ModelType } from "./lib/types";
     import {
         currentChatStore,
         currentResponseStore,
         emptyChat,
-    } from "./lib/messages";
+    } from "./lib/stores/messages";
     import { capitalize } from "./lib/utils/helpers";
     import { ArrowUpIcon, SettingsIcon, EditIcon } from "svelte-feather-icons";
     import Sidebar from "./lib/components/Sidebar.svelte";
@@ -15,12 +14,13 @@
     import TextAreaAutosize from "./lib/components/TextAreaAutosize.svelte";
     import Select from "./lib/components/Select.svelte";
     import Button from "./lib/components/Button.svelte";
-    import { historyStore } from "./lib/history";
+    import { historyStore } from "./lib/stores/history";
+    import ollamaAPI from "./lib/api";
 
     let sidebarIsCollapsed: boolean;
 
     // Models
-    let currentModel = "mistral";
+    let currentModel = "mistral:latest";
     let allModels: ModelType[] = [];
 
     // Messages
@@ -86,6 +86,19 @@
             });
         }
 
+        // add chat to history
+        if (currentChat != emptyChat) {
+            historyStore.update((history) => {
+                return history.map((chat) => {
+                    if (chat.id === currentChat.id) {
+                        return currentChat;
+                    } else {
+                        return chat;
+                    }
+                });
+            });
+        }
+
         // make a save to local storage
         localStorage.setItem("history", JSON.stringify(history));
     };
@@ -112,6 +125,8 @@
     onMount(async () => {
         // fetch all models
         allModels = await ollamaAPI.models.list().then((d) => d["models"]);
+        console.log(allModels);
+        
 
         // get data from local storage
         if (localStorage.getItem("history")) {
@@ -149,18 +164,18 @@
             <!-- Header -->
             <header>
                 <div class="logo">
-                    <img src="public/ollama.png" alt="" />
+                    <img src="/ollama.png" alt="Ollama logo" />
                 </div>
                 <h2>Ollama Chat</h2>
                 {#if allModels}
                     {#if allModels.length === 0}
-                        <p>Follow instruction on this <a href="https://github.com/jmorganca/ollama/blob/main/docs/faq.md#how-do-i-use-ollama-server-environment-variables-on-linux">page</a>. Or install a <a href="https://ollama.ai/library">model</a></p>
+                        <p>Follow instruction on this <a href="https://github.com/jmorganca/ollama/blob/main/docs/faq.md#how-do-i-use-ollama-server-environment-variables-on-linux">page</a>. Or install a <a href="https://ollama.ai/library">model</a>.</p>
                     {:else}
                         <Select
                             data={allModels.map((m) => {
                                 return {
-                                    value: m.name.split(":")[0],
-                                    text: `${capitalize(m.name.split(":")[0])} (${m.details.parameter_size})`
+                                    value: m.name,
+                                    text: `${capitalize(m.name.split(":")[0])} | ${capitalize(m.name.split(":")[1])} (${m.details.parameter_size})`
                                 }
                             })}
                             bind:value={currentModel}
@@ -350,10 +365,10 @@
                 transform: translateY(-50%) scale(0.95);
             }
         }
+    }
 
-        svg {
-            background: #000;
-            stroke: rgb(var(--color-surface-800));
-        }
+    svg {
+        background: #000;
+        stroke: rgb(var(--color-surface-800));
     }
 </style>
